@@ -2,6 +2,10 @@
 // -Convert float to byte array
 // -Convert byte array to float
 
+// Albert M Thalheim
+// June 2021
+// athalheim@gmail.com
+
 var ieee754= {
         // Definitions: exponent, fraction and bias
     bitFormats:{
