@@ -1,83 +1,76 @@
 <html>
- <head>
- </head>
- <body>
-  <script type="text/javascript" src="ieee754.js"></script>
-  <script type="text/javascript">
-    var s = '<b>IEEE 754<br/>';
-    s += ' Applying IEEE Standard for Binary Floating-Point Arithmetic <br/>';
-    s += ' using Javascript </b><br/>';
-    s += '<hr>';
-    s += 'Albert M Thalheim, June 2021';
-    s += '<hr>';
-    s += ' <b>List of procedures</b><br/>';
-        //
-    s += '<br/>';
-    s += '<b>isBigEndian()</b><br/>';
-    s += ' &nbsp; Description: Bytes are in low-to-high order (Most significant byte is last.<br/>';
-    s += 'Setting isBigEndian to true <br/>';
-    s += ' &nbsp;Command:   <b>ieee754.isBigEndian(true)</b>; <br/>';
-    ieee754.isBigEndian(true);
-    s += ' &nbsp;&nbsp; Result: ieee754.isBigEndian()=' + ieee754.isBigEndian() + '<br/>';
+  <head>
+  <title>Test with Typed Arrays</title>
+    <script type="text/javascript" src="ieee754.js">
+    </script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      s                      = 'Test with Typed Arrays<br/><br/>';
+      // System byte order:
+      s                     += 'System byte order is: '      + ieee754.endianness()    + '<br/><br/>';
 
-        //
-    s += '<br/>';
-    s += 'Setting isBigEndian to false <br/>';
-    s += ' &nbsp; Command:   <b>ieee754.isBigEndian(false)</b>; <br/>';
-    ieee754.isBigEndian(false);
-    s += ' &nbsp;&nbsp; Result: ieee754.isBigEndian()=' + ieee754.isBigEndian() + '<br/>';
+      // Set work arrays
+      values                           = ['26', '-26', '26.4', '-26.4', 'n26', 'n-26'];
+      bitCounts                        = [8,16,32,64];
+      isLittleEndians                  = [true, false];
+      isIntegers                       = [true, false];
+      isSigneds                        = [true, false];
+      // Set loops:
+      for (v=0; v < values.length; v += 1) {
+        valueString                    = values[v];
+        value                          = 0;
+        if (valueString.startsWith('n')) {
+          value                        = BigInt(valueString.substring(1));
+        } else {
+          value                        = Number(valueString);
+        }
+        s                             += 'valueString: ' + valueString + '<br/>';
+        s                             += '&nbsp;type: ' + (typeof value) + '<br/>';
+        s                             += '&nbsp;value: ' + value + '<br/>';
 
-        //
-    s += '<br/>';
-    s += 'query isBigEndian <br/>';
-    s += ' &nbsp; Command:   <b>ieee754.isBigEndian()</b>; <br/>';
-    s += ' &nbsp;&nbsp; Result: ieee754.isBigEndian()=' + ieee754.isBigEndian() + '<br/>';
-    s += '<hr>';
-        //
-    s += '<br/>';
-    s += '<b>setBitCount()</b> <br/>';
-    s += ' &nbsp; Description: Set sign-exponent-fraction bits count.<br/>';
-    s += ' &nbsp;&nbsp; Example 1: Setting parameters for 64 bits: <br/>';
-    s += ' &nbsp; Command:    <b>ieee754.setBitCount(64)</b>; <br/>';
-    ieee754.setBitCount(64);
-    s += ' &nbsp; <i>(Note: For information purpose only: these variables should not be addressed directly.)</i><br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._exponentBitCount: ' + ieee754._exponentBitCount + '<br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._fractionBitCount: ' + ieee754._fractionBitCount + '<br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._bias: ' + ieee754._bias + '<br/>';
+        for (j=0; j < isLittleEndians.length; j += 1) {
+          isLittleEndian               = isLittleEndians[j];
+          s                           += '&nbsp;&nbsp;' + (isLittleEndian?'little':'big') + '<br/>';
+          for (k=0; k < isIntegers.length; k += 1) {
+            isInteger                  = isIntegers[k];
+            s                          += '&nbsp;&nbsp;&nbsp;&nbsp;' + (isInteger?'integer':'float') + '<br/>';
+            for (l=0; l < isSigneds.length; l += 1) {
+              isSigned                 = isSigneds[l];
+              s                       += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + (isSigned?'signed':'unsigned') + '<br/>';
+              for (i=0; i < bitCounts.length; i += 1) {
+                bitCount               = bitCounts[i];
+                s                     += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + bitCount + ': ';
+                // Process value according to parameters:
+                try {
+                  // Step 1: convert value to bytes:
+                  bytes                = ieee754.setBytes(value, bitCount, isLittleEndian, isInteger, isSigned);
+                  // Display conversion result
+                  if (bytes === null) {
+                    s                   += 'null';
+                  } else {
+                    s                   += '[' + bytes + ']';
+                  }
+                  // Step 2: where applicable, convert bytes to value:
+                  if (bytes !== null) {
+                    returnValue        = ieee754.setValue(bytes, bitCount, isLittleEndian, isInteger, isSigned);
+                    s                 += '&nbsp;&nbsp;'
+                    s                 += '>>>>>> ' + returnValue;
+                  }
+                } catch(ex) {
+                  s                   += '&nbsp;&nbsp;' + ex.message;
+                }
+                s                     += '<br/>';
+              }
+            }
+          }
+        }
+        // Line break between values
+        s                             += '<br/>';
+      }
+      // Display result:
+      document.body.innerHTML = s;
+    </script>
+  </body>
+  </html>
 
-        //
-    s += '<br/>';
-    s += ' &nbsp;&nbsp;Example 2:Setting parameters for 32 bits: <br/>';
-    s += ' &nbsp;Command:    <b>ieee754.setBitCount(32)</b>; <br/>';
-    ieee754.setBitCount(32);
-    s += ' &nbsp; <i>(Note: For information purpose only: these variables should not be addressed directly.)</i><br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._exponentBitCount: ' + ieee754._exponentBitCount + '<br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._fractionBitCount: ' + ieee754._fractionBitCount + '<br/>';
-    s += ' &nbsp;&nbsp; Result:  ieee754._bias: ' + ieee754._bias + '<br/>';
-    s += '<hr>';
-
-        //
-    s += '<br/>';
-    s += '<b>setBytes() </b><br/>';
-    s += '&nbsp;Description: Convert value to bytes: <br/>';
-    s += '&nbsp;(Using 32 bits) <br/>';
-
-    var test = 3.141592;
-    s += ' &nbsp; Command:  <b>ieee754.setBytes(' + test + ')</b>;' + '<br/>';
-    s += ' &nbsp;&nbsp; Result: [' + ieee754.setBytes(test) + '] <br/>';
-    s += '<hr>';
-
-        //
-    s += '<br/>';
-    s += '<b>setValue() </b><br/>';
-    s += '&nbsp;Description: Convert bytes to value: <br/>';
-    s += '&nbsp;(Using 32 bits) <br/>';
-    var bytes = [192, 73, 15, 216];
-    s += ' &nbsp; Command:  <b>ieee754.setValue([' + bytes + '])</b>;' + '<br/>';
-    s += ' &nbsp;&nbsp; Result: ' + ieee754.setValue(bytes) + '<br/>';
-    s += '<hr>';
-
-    document.write(s);
-  </script>
- </body>
-</html>
